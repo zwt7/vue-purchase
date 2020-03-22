@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单管理</title>
+    <script src="/css/vue.js"></script>
+    <link rel="stylesheet" href="/css/purchase.css">
+</head>
+
+<body>
+    
+    <div id="app">
+        <!-- 头部，订单管理的部分和品牌搜寻的部分 -->
+        <div id="head">
+            <span class="title">订单管理</span>
+            <span class="right"> 品牌: <input type="text" v-model="brand"></span>
+            <button id="check" @click='check'>查询</button>
+        </div>
+        <!-- 表格的左半部分 -->
+        <div class="bot">
+            <div class="table">
+                <table cellspacing='0' border="1" width=800px id="table1" style="text-align: center;">
+                    <thead>
+                        <td>品牌</td>
+                        <td>订单日期</td>
+                        <td>订单单价</td>
+                        <td>购买数量</td>
+                        <td>操作</td>
+                    </thead>
+                    <tbody class="tbody">
+                        <tr v-for="item in info" :key='item.id'>
+                            <td>{{item.name}}</td>
+                            <td>{{item.date|formaDate}}</td>
+                            <td>{{item.univalent}}</td>
+                            <td><button @click='item.quality>0?item.quality--:0'>-</button>&nbsp;&nbsp;{{item.quality}}&nbsp;&nbsp;<button @click='item.quality<10?item.quality++:10'>+</button></td>
+                            <td><input type="button" @click='del(item.id)' value="删除"></td>
+                        </tr>
+                        <tr class="end" style="text-align: left;">
+                            <td colspan="5">订单总价: <span id="total">{{total1}}</span> </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- 表格的右半部分 -->
+            <div class="adds">
+                <p>新增订单</p>
+                <hr>
+                <p class="a">品牌</p>
+                <!-- v-model= 双面向绑定数据 -->
+                <!-- 为什么只能绑定一次的数值呢？？再绑第二次就是说在数组里是不认识的数值了 -->
+                <p><input type="text" v-model='addInfo.name' placeholder="如:笔记本，手机"
+                        style="BACKGROUND-COLOR: transparent">
+                </p>
+                <p class="b">单价</p>
+                <p><input type="text" v-model='addInfo.univalent' placeholder="如:50"
+                        style="BACKGROUND-COLOR: transparent"></p>
+                <p class="c">数量</p>
+                <p><input type="text" v-model='addInfo.quality
+                    ' placeholder="如:3" style="BACKGROUND-COLOR: transparent">
+                </p>
+                <button id="submit" @click="submit1">提交</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var padaDate = function (value) {
+            return value < 10 ? "0" + value : value;
+        };
+        var pur = new Vue({
+            el: "#app",
+            data: {
+                info: [{
+                    id: '1',
+                    name: '华为',
+                    date: '',
+                    univalent: '3000',
+                    quality: 3,
+                }, {
+                    id: '2',
+                    name: '小米',
+                    date: '',
+                    univalent: '29999',
+                    quality: 2,
+                }],
+                addInfo: {
+                    id: 'index1++',
+                    name: '',
+                    date: '',
+                    univalent: '',
+                    quality: '',
+                },
+                index1: 2,
+                totalM: '',
+                brand: '',
+            },
+            methods: {
+                submit1: function () {
+                    this.info.push(this.addInfo);
+                    this.addInfo = new Object();
+                },
+                del: function (id) {
+                    //每行数据都有一个id,删除的时候都是根据这个id来删的
+                    // 数组中的some方法，当some方法遇到ture,就会停止打印,
+                    var index = this.info.some((item, i) => {
+                        if (item.id == i + 1)
+                            return true;
+                    });
+                    // 删除这个数组中的数据
+                    this.info.splice(index, 1);
+                },
+                check: function () {
+                    // 需要好好理解这里的this,这是精确查
+                    let _this=this
+                    this.info=this.info.filter(function(item){
+                        return item.name==_this.brand;
+                    });
+                },
+            },
+            computed: {
+                'total1': function () {
+                    // 求他的总价，就是将这个商品的单价*数量
+                    this.totalM = 0;
+                    for (var i = 0; i < this.info.length; i++) {
+                        this.totalM += this.info[i].quality * this.info[i].univalent;
+                    }
+                    return this.totalM;
+                }
+            },
+            filters: {
+                //设置一个函数来进行过滤
+                formaDate: function (value) {
+                    //创建一个时间日期对象
+                    var date = new Date();
+                    var year = date.getFullYear(); //存储年
+                    var month = padaDate(date.getMonth() + 1); //存储月份
+                    var day = padaDate(date.getDate()); //存储日期
+                    var hours = padaDate(date.getHours()); //存储时
+                    var minutes = padaDate(date.getMinutes()); //存储分
+                    return (
+                        year +
+                        "-" +
+                        month +
+                        "-" +
+                        day +
+                        " " +
+                        hours +
+                        ":" +
+                        minutes);
+
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

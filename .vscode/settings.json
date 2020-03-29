@@ -1,3 +1,4 @@
 {
-    "editor.fontFamily": "Fira Code, '\"Microsoft YaHei', monospace"
+    "editor.fontFamily": "Fira Code, '\"Microsoft YaHei', monospace",
+    "liveServer.settings.port": 5501
 }

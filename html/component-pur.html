@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组件化的订单</title>
+    <script src="/css/vue.js"></script>
+    <style>
+      .container{
+          margin:0;
+          padding: 0;
+      }
+      .container .tbody1{
+          width: 800px;
+          margin: 0 auto;
+          background:#F5F5F5;
+      }
+      .container .tbody1 {
+          text-align: center;
+          width: 150px;
+          height: 20px;
+      }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <!-- 将组件名放在里面 -->
+            <purchase></purchase>
+        </div>
+    </div>
+    <script>
+          var padaDate = function (value) {
+            return value < 10 ? "0" + value : value;
+        };
+        // Vue.filter('yyyyMMdd',function(dateStr){
+        //     var dt = new Date(dateStr);
+        //     var y = dt.getFullYear();
+        //     var m = (dt.getMonth() + 1).toString().padStart(2,'0');
+        //     var d = dt.getDate().toString().padStart(2,'0');
+        //     return `${y}-${m}-${d}`;
+        // })
+        // 在你定义的组件里加入你的模板(样式部分,以及属性，以便之后放入数据)
+        let Title={
+            props:['title'],
+            template:`
+            <div class="table">
+                <table cellspacing='0' border="1" width=750px  style="text-align: center;">
+                    <thead>
+                        <td>品牌</td>
+                        <td>订单日期</td>
+                        <td>订单单价</td>
+                        <td>购买数量</td>
+                        <td>操作</td>
+                    </thead>
+                </table>
+                </div>
+            `
+        }
+       
+        let List={
+            props:['list'],
+            template:`
+                 <tbody class="tbody1">
+                    <tr v-for="item in list" :key='item.id'>
+                        <td width="95px">{{item.name}}</td>
+                        <td width="185px">{{item.date | formaDate}}</td>
+                        <td width="190px">{{item.price}}</td>
+                        <td width="180px">
+                            <a href="" @click.prevent='sub(item.id)'>-</a>
+                            <input type="text" style="width:20%" :value="item.num" @blur='changeNum(item.id,$event)'/>
+                            <a href="" @click.prevent='add(item.id)'>+</a>
+                        </td>
+                        <td width="100px"><input type="button"  @click='del(item.id)' value="删除"></td>
+                   </tr>
+                </tbody>
+            `,
+            methods:{
+                // 绑定事件
+               del:function(id){
+                   this.$emit('pur-del',id);
+               },
+               sub:function(id){
+                   this.$emit('change-num',{
+                       id:id,
+                       type:'sub'
+                   })
+               },
+               add:function(id){
+                   this.$emit('change-num',{
+                       id:id,
+                       type:'add'
+                   })
+               },
+            //    将每次改变后的值赋给item.num
+               changeNum:function(id,event){
+                   this.$emit('change-num',{
+                       id:id,
+                       type:'change',
+                       value: event.target.value
+                   })
+               },
+            },
+            filters:{
+                formaDate:function(value){
+                      //创建一个时间日期对象
+                      var date = new Date();
+                    var year = date.getFullYear(); //存储年
+                    var month = padaDate(date.getMonth() + 1); //存储月份
+                    var day = padaDate(date.getDate()); //存储日期
+                    var hours = padaDate(date.getHours()); //存储时
+                    var minutes = padaDate(date.getMinutes()); //存储分
+                    return (
+                        year +
+                        "-" +
+                        month +
+                        "-" +
+                        day +
+                        " " +
+                        hours +
+                        ":" +
+                        minutes);
+                }
+            }    
+        }
+        let Total={
+            props:['list'],
+            template:`
+            <div>
+                <tr>
+                    <td><strong>总价:<span>{{tatalCost}}</span></strong></td>
+                </tr>
+            </div>
+            `,
+            computed:{
+                tatalCost:function(){
+                    let price=0;
+                    this.list.forEach(item =>{
+                        price +=item.price *item.num;
+                    });
+                    return price;
+                }
+            }
+
+        }
+       
+        // 总的全局注册，里面包含总的数据，包括头部
+        Vue.component('purchase',{
+            data:function(){
+                return{
+                    list:[{
+                        id:1,
+                        name:'小米',
+                        date: new Date('2020-3-28'),
+                        price:'100',
+                        num:1,
+                    },
+                    {
+                        id:2,
+                        name:'华为',
+                        date:'',
+                        price:'100',
+                        num:1,
+                    },{
+                        id:3,
+                        name:'苹果',
+                        date:'',
+                        price:'100',
+                        num:1,
+                    },{
+                        id:4,
+                        name:'惠普',
+                        date:'',
+                        price:'100',
+                        num:1,
+                    },{
+                        id:5,
+                        name:'777',
+                        date:'',
+                        price:'100',
+                        num:1,
+                    },{
+                        id:6,
+                        name:'666',
+                        date:'',
+                        price:'100',
+                        num:1,
+                    }]
+                }
+            },
+            components:{
+                // 在组件里定义你想要使用的组件
+                'pur-title':Title,
+                'pur-list':List,
+                'pur-total':Total,
+            },
+            // 给你绑定的组件的大头头放在模板里
+            template:`
+            <div class='pur'>
+                 <pur-title></pur-title>
+                 <pur-list :list='list' @pur-del='deleteCart($event)' @change-num='changeNum'></pur-list>
+                 <pur-total :list='list'></pur-total>
+            </div>
+            `,
+            methods:{
+                deleteCart:function(id){
+                    let index = this.list.findIndex(item => {
+                            return item.id == id;
+                    })
+                        this.list.splice(index,1);
+               },
+               changeNum:function(val){
+                   if(val.type=='sub'){
+                       this.list.some(item=>{
+                           if(item.id==val.id){
+                               if(item.num==1){
+                                   alert("不能再少了！");
+                                   return true;
+                               }
+                            item.num-=1;
+                           return true;
+                           }                
+                       })
+                   }
+                   else if(val.type=='add'){
+                       this.list.some(item=>{
+                           if(item.id==val.id){
+                               item.num+=1;
+                               return true;
+                           }
+                       })
+                   }
+                   else if(val.type=='change'){
+                       this.list.some(item=>{
+                           if(item.id==val.id){
+                               item.num=val.value;
+                               return true;
+                            }
+                       })
+                   }
+               }
+            },
+        })
+        var vm=new Vue({
+            el:"#app",
+            data:{
+               
+            }
+        })
+       
+    </script>
+</body>
+</html>
